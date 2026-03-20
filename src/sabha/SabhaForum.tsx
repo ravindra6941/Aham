@@ -51,7 +51,7 @@ export default function SabhaForum() {
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
 
-  const allTags = [...new Set(discussions.flatMap((d) => d.tags))];
+  const allTags = Array.from(new Set(discussions.flatMap((d) => d.tags)));
   const filtered = selectedTag
     ? discussions.filter((d) => d.tags.includes(selectedTag))
     : discussions;
