@@ -168,12 +168,41 @@ export default function NadaPlayer() {
   useEffect(() => {
     if (pathname !== "/nada") {
       stopAudio();
+      setActiveBand(null);
+      setIsPlaying(false);
     }
   }, [pathname, stopAudio]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount + mobile back/swipe/tab switch
   useEffect(() => {
-    return () => { stopAudio(); };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        stopAudio();
+        setActiveBand(null);
+        setIsPlaying(false);
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      stopAudio();
+    };
+
+    const handlePopState = () => {
+      stopAudio();
+      setActiveBand(null);
+      setIsPlaying(false);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      stopAudio();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, [stopAudio]);
 
   const toggleBand = (index: number) => {

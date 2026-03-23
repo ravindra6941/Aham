@@ -81,6 +81,44 @@ const CONFIDENCE_TIERS = [
 export default function DiscoveryEngine() {
   const [selectedTerm, setSelectedTerm] = useState<LexiconEntry | null>(null);
   const [verseInput, setVerseInput] = useState("");
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const analyzeVerse = async (input?: string) => {
+    const query = input || verseInput.trim();
+    if (!query || isAnalyzing) return;
+
+    setIsAnalyzing(true);
+    setError(null);
+    setAnalysisResult(null);
+
+    try {
+      const res = await fetch("/api/discovery/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verse: query }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Analysis failed");
+      }
+
+      const data = await res.json();
+      setAnalysisResult(data.content);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const analyzeLexiconEntry = (entry: LexiconEntry) => {
+    const query = `${entry.term} (${entry.sanskrit}) — ${entry.domain}: ${entry.openProblem}. Related verses: ${entry.relatedVerses.join(", ")}`;
+    setVerseInput(query);
+    analyzeVerse(query);
+  };
 
   return (
     <div className="min-h-screen px-4 py-6 sm:p-8 pt-16 sm:pt-8 max-w-5xl mx-auto">
@@ -92,18 +130,18 @@ export default function DiscoveryEngine() {
         </h1>
         <p className="font-devanagari text-2xl text-vedic-parchment/60">ऋत</p>
         <p className="text-vedic-parchment/40 mt-4 max-w-lg mx-auto">
-          Science's new frontier. Mining patterns across the entire Vedic corpus
+          Science&apos;s new frontier. Mining patterns across the entire Vedic corpus
           that no individual researcher could find. Converting encoded statements
           into falsifiable scientific hypotheses.
         </p>
       </div>
 
       {/* Epistemic Honesty Legend */}
-      <div className="sacred-card p-6 mb-8">
+      <div className="sacred-card p-4 sm:p-6 mb-8">
         <h3 className="font-sacred text-lg text-vedic-parchment/70 mb-4">
           Epistemic Honesty Tiers
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {CONFIDENCE_TIERS.map((tier) => (
             <div key={tier.label} className="flex items-start gap-2">
               <div
@@ -124,22 +162,110 @@ export default function DiscoveryEngine() {
       </div>
 
       {/* Verse analysis input */}
-      <div className="sacred-card p-6 mb-8">
+      <div className="sacred-card p-4 sm:p-6 mb-8">
         <h3 className="font-sacred text-lg text-vedic-parchment/70 mb-4">
-          Analyze a Verse
+          Analyze a Verse or Concept
         </h3>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <input
             type="text"
             value={verseInput}
             onChange={(e) => setVerseInput(e.target.value)}
-            placeholder="Enter verse reference (e.g., Rig Veda 1.164.46)"
-            className="flex-1 bg-transparent border-b border-vedic-gold/20 text-vedic-parchment p-2 outline-none placeholder:text-vedic-parchment/20"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") analyzeVerse();
+            }}
+            placeholder="Enter verse reference or concept (e.g., Rig Veda 1.164.46, or 'Prana and bioenergy')"
+            className="flex-1 bg-transparent border-b border-vedic-gold/20 text-vedic-parchment p-2 outline-none placeholder:text-vedic-parchment/20 text-sm sm:text-base"
           />
-          <button className="px-6 py-2 border border-vedic-gold/30 text-vedic-gold font-sacred hover:bg-vedic-gold/10 transition-colors rounded">
-            Generate Hypotheses
+          <button
+            onClick={() => analyzeVerse()}
+            disabled={!verseInput.trim() || isAnalyzing}
+            className="px-6 py-2 border border-vedic-gold/30 text-vedic-gold font-sacred hover:bg-vedic-gold/10 transition-colors rounded disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap"
+          >
+            {isAnalyzing ? "Analyzing..." : "Generate Hypotheses"}
           </button>
         </div>
+
+        {/* Error */}
+        {error && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-4 text-red-400/80 text-sm"
+          >
+            {error}
+          </motion.p>
+        )}
+
+        {/* Analysis result */}
+        <AnimatePresence>
+          {analysisResult && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mt-6 pt-6 border-t border-vedic-gold/10"
+            >
+              <h4 className="font-sacred text-sm text-vedic-gold/60 mb-3 uppercase tracking-wider">
+                Analysis Result
+              </h4>
+              <div className="text-vedic-parchment/80 text-sm leading-relaxed whitespace-pre-wrap font-sans space-y-2">
+                {analysisResult.split("\n").map((line, i) => {
+                  // Bold headers
+                  if (line.startsWith("**") && line.includes("**:")) {
+                    const parts = line.split("**:");
+                    const header = parts[0].replace(/\*\*/g, "");
+                    const content = parts.slice(1).join("**:");
+                    return (
+                      <p key={i}>
+                        <span className="font-semibold text-vedic-gold">{header}:</span>
+                        {content}
+                      </p>
+                    );
+                  }
+                  // Epistemic tags
+                  if (line.includes("[structural_parallel]")) {
+                    return <p key={i} className="border-l-2 border-blue-500 pl-3">{line}</p>;
+                  }
+                  if (line.includes("[speculative]")) {
+                    return <p key={i} className="border-l-2 border-yellow-500 pl-3">{line}</p>;
+                  }
+                  if (line.includes("[testable]")) {
+                    return <p key={i} className="border-l-2 border-green-500 pl-3">{line}</p>;
+                  }
+                  if (line.includes("[verified]")) {
+                    return <p key={i} className="border-l-2 border-orange-500 pl-3">{line}</p>;
+                  }
+                  if (!line.trim()) return <br key={i} />;
+                  return <p key={i}>{line}</p>;
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Loading state */}
+        {isAnalyzing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-6 pt-6 border-t border-vedic-gold/10 flex items-center gap-3"
+          >
+            <div className="flex gap-1.5">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-2 h-2 rounded-full bg-vedic-gold/40"
+                  animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1, 0.8] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-vedic-gold/40 font-sacred italic">
+              The Discovery Engine is analyzing patterns...
+            </span>
+          </motion.div>
+        )}
       </div>
 
       {/* Sanskrit Open Scientific Lexicon */}
@@ -154,7 +280,7 @@ export default function DiscoveryEngine() {
         {LEXICON.map((entry) => (
           <motion.div
             key={entry.term}
-            className={`sacred-card p-5 cursor-pointer transition-all ${
+            className={`sacred-card p-4 sm:p-5 cursor-pointer transition-all ${
               selectedTerm?.term === entry.term
                 ? "border-vedic-gold/40"
                 : ""
@@ -192,7 +318,7 @@ export default function DiscoveryEngine() {
                   <p className="text-vedic-parchment/40 text-xs uppercase tracking-wider mb-2">
                     Related Verses
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mb-3">
                     {entry.relatedVerses.map((v) => (
                       <span
                         key={v}
@@ -202,6 +328,16 @@ export default function DiscoveryEngine() {
                       </span>
                     ))}
                   </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      analyzeLexiconEntry(entry);
+                    }}
+                    disabled={isAnalyzing}
+                    className="w-full mt-2 px-4 py-2 text-sm border border-vedic-saffron/30 text-vedic-saffron font-sacred hover:bg-vedic-saffron/10 transition-colors rounded disabled:opacity-30"
+                  >
+                    {isAnalyzing ? "Analyzing..." : `Analyze ${entry.term}`}
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>

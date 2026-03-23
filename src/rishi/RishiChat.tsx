@@ -32,7 +32,7 @@ export default function RishiChat() {
   const [isRishiTyping, setIsRishiTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [currentRishi, setCurrentRishi] = useState("narada");
-  const [ollamaAvailable, setOllamaAvailable] = useState<boolean | null>(null);
+  const [llmAvailable, setOllamaAvailable] = useState<boolean | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -243,23 +243,19 @@ export default function RishiChat() {
             </p>
           </div>
           {/* Ollama status indicator */}
-          {ollamaAvailable !== null && (
-            <div className="flex-shrink-0" title={ollamaAvailable ? "Ollama connected" : "Offline mode"}>
-              <div className={`w-2 h-2 rounded-full ${ollamaAvailable ? "bg-green-500" : "bg-vedic-gold/40"}`} />
+          {llmAvailable !== null && (
+            <div className="flex-shrink-0" title={llmAvailable ? "Ollama connected" : "Offline mode"}>
+              <div className={`w-2 h-2 rounded-full ${llmAvailable ? "bg-green-500" : "bg-vedic-gold/40"}`} />
             </div>
           )}
         </div>
       </div>
 
-      {/* Ollama offline banner */}
-      {ollamaAvailable === false && (
+      {/* LLM offline banner */}
+      {llmAvailable === false && (
         <div className="bg-vedic-dawn/30 border-b border-vedic-gold/10 px-4 py-2 text-center">
           <p className="text-xs text-vedic-gold/60">
-            Ollama not detected — using placeholder responses. Run{" "}
-            <code className="bg-vedic-ash/50 px-1.5 py-0.5 rounded text-vedic-saffron">
-              ollama serve
-            </code>{" "}
-            to enable AI.
+            AI not connected — using placeholder responses. The Rishi awaits a deeper vessel.
           </p>
         </div>
       )}
