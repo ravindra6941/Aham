@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BackToMandala from "@/components/BackToMandala";
+import ShareWisdom from "@/components/ShareWisdom";
 
 interface Message {
   id: string;
@@ -258,9 +259,16 @@ export default function RishiChat() {
                       )}
                     </p>
                     {!isRishiTyping && msg.content && (
-                      <p className="text-[10px] text-vedic-parchment/10 mt-4 font-sans">
-                        {formatTime(msg.timestamp)}
-                      </p>
+                      <div className="flex items-center gap-3 mt-4">
+                        <p className="text-[10px] text-vedic-parchment/10 font-sans">
+                          {formatTime(msg.timestamp)}
+                        </p>
+                        <ShareWisdom
+                          wisdom={msg.content}
+                          rishiName={info.name}
+                          rishiSanskrit={info.sanskrit}
+                        />
+                      </div>
                     )}
                   </div>
                 ) : (

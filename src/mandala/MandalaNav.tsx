@@ -94,6 +94,8 @@ export default function MandalaNav() {
   const [hoveredPetal, setHoveredPetal] = useState<string | null>(null);
   const [tappedPetal, setTappedPetal] = useState<string | null>(null);
   const [visited, setVisited] = useState<Set<string>>(new Set());
+  const [seekerCount, setSeekerCount] = useState<number | null>(null);
+  const [showShare, setShowShare] = useState(false);
   const router = useRouter();
   const radius = useRadius();
 
@@ -103,6 +105,14 @@ export default function MandalaNav() {
       const stored = localStorage.getItem("aham_visited_petals");
       if (stored) setVisited(new Set(JSON.parse(stored)));
     } catch {}
+  }, []);
+
+  // Register as a seeker & get count
+  useEffect(() => {
+    fetch("/api/seekers", { method: "POST" })
+      .then((r) => r.json())
+      .then((d) => setSeekerCount(d.count))
+      .catch(() => {});
   }, []);
 
   const petalSize = radius < 130 ? 60 : radius < 155 ? 72 : 88;
@@ -263,6 +273,116 @@ export default function MandalaNav() {
           </motion.div>
         );
       })}
+
+      {/* Bottom — seeker count + share */}
+      <motion.div
+        className="absolute bottom-6 sm:bottom-10 left-0 right-0 flex flex-col items-center gap-3 z-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5, duration: 1.5 }}
+      >
+        {seekerCount !== null && (
+          <p className="text-[10px] text-vedic-parchment/15 font-sans tracking-wider">
+            {seekerCount} seekers have entered
+          </p>
+        )}
+        <button
+          onClick={() => setShowShare(true)}
+          className="text-[10px] text-vedic-gold/25 hover:text-vedic-gold/50 font-sans tracking-wider uppercase transition-colors duration-500"
+        >
+          Invite a seeker
+        </button>
+      </motion.div>
+
+      {/* Share overlay */}
+      <AnimatePresence>
+        {showShare && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/60 z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowShare(false)}
+            />
+            <motion.div
+              className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-sm mx-auto glass p-8 z-50 text-center"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <h3 className="font-devanagari text-2xl text-vedic-parchment/60 mb-2">
+                अहम्
+              </h3>
+              <p className="text-vedic-parchment/30 text-sm font-sans mb-6">
+                Share AHAM with someone seeking wisdom
+              </p>
+              <div className="flex flex-col gap-3">
+                {typeof navigator !== "undefined" && "share" in navigator && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await navigator.share({
+                          title: "AHAM — Talk to Ancient Vedic Sages",
+                          text: "I found this incredible app that lets you talk to ancient Vedic sages powered by AI. It's free.",
+                          url: "https://aham-pi.vercel.app",
+                        });
+                      } catch {}
+                      setShowShare(false);
+                    }}
+                    className="w-full py-3 rounded-full border border-vedic-saffron/20 text-vedic-saffron/60 text-[12px] font-sans tracking-wider uppercase hover:bg-vedic-saffron/5 transition-all duration-500"
+                  >
+                    Share
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    const text = encodeURIComponent(
+                      "I've been talking to ancient Vedic sages through this AI app. It's free and quite profound:\nhttps://aham-pi.vercel.app"
+                    );
+                    window.open(`https://wa.me/?text=${text}`, "_blank", "noopener");
+                    setShowShare(false);
+                  }}
+                  className="w-full py-3 rounded-full border border-white/[0.06] text-vedic-parchment/30 text-[12px] font-sans tracking-wider uppercase hover:bg-white/[0.02] transition-all duration-500"
+                >
+                  WhatsApp
+                </button>
+                <button
+                  onClick={() => {
+                    const text = encodeURIComponent(
+                      "Talk to ancient Vedic sages powered by AI. Free, no paywall.\n\nExplore consciousness, sound healing, and where 5,000-year-old wisdom meets modern science."
+                    );
+                    const url = encodeURIComponent("https://aham-pi.vercel.app");
+                    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
+                    setShowShare(false);
+                  }}
+                  className="w-full py-3 rounded-full border border-white/[0.06] text-vedic-parchment/30 text-[12px] font-sans tracking-wider uppercase hover:bg-white/[0.02] transition-all duration-500"
+                >
+                  Post on X
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText("https://aham-pi.vercel.app");
+                    } catch {}
+                    setShowShare(false);
+                  }}
+                  className="w-full py-3 rounded-full border border-white/[0.06] text-vedic-parchment/30 text-[12px] font-sans tracking-wider uppercase hover:bg-white/[0.02] transition-all duration-500"
+                >
+                  Copy Link
+                </button>
+              </div>
+              <button
+                onClick={() => setShowShare(false)}
+                className="mt-4 text-[10px] text-vedic-parchment/15 font-sans hover:text-vedic-parchment/30 transition-colors"
+              >
+                Close
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
