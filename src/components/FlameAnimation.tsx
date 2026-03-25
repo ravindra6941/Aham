@@ -8,10 +8,10 @@ interface FlameAnimationProps {
 }
 
 const sizeMap = {
-  sm: { width: 40, height: 60 },
-  md: { width: 80, height: 120 },
-  lg: { width: 120, height: 180 },
-  xl: { width: 200, height: 300 },
+  sm: { width: 32, height: 48 },
+  md: { width: 60, height: 90 },
+  lg: { width: 100, height: 150 },
+  xl: { width: 160, height: 240 },
 };
 
 export default function FlameAnimation({
@@ -25,22 +25,22 @@ export default function FlameAnimation({
       className={`relative flex items-center justify-center ${className}`}
       style={{ width, height }}
     >
-      {/* Outer glow */}
+      {/* Ambient light */}
       <motion.div
         className="absolute rounded-full"
         style={{
-          width: width * 1.5,
-          height: height * 0.8,
+          width: width * 2.5,
+          height: height * 1.2,
           background:
-            "radial-gradient(ellipse at center, rgba(255,102,0,0.15) 0%, transparent 70%)",
-          bottom: 0,
+            "radial-gradient(ellipse at center, rgba(232,114,12,0.08) 0%, rgba(232,114,12,0.02) 40%, transparent 70%)",
+          bottom: -height * 0.1,
         }}
         animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.5, 0.8, 0.5],
+          scale: [1, 1.08, 1],
+          opacity: [0.4, 0.7, 0.4],
         }}
         transition={{
-          duration: 3,
+          duration: 4,
           repeat: Infinity,
           ease: "easeInOut",
         }}
@@ -62,7 +62,7 @@ export default function FlameAnimation({
           ease: "easeInOut",
         }}
       >
-        {/* Outer flame — saffron */}
+        {/* Outer flame */}
         <motion.path
           d="M50 5 C50 5, 15 60, 15 90 C15 115, 30 140, 50 145 C70 140, 85 115, 85 90 C85 60, 50 5, 50 5Z"
           fill="url(#outerFlameGrad)"
@@ -74,14 +74,10 @@ export default function FlameAnimation({
               "M50 5 C50 5, 15 60, 15 90 C15 115, 30 140, 50 145 C70 140, 85 115, 85 90 C85 60, 50 5, 50 5Z",
             ],
           }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Inner flame — gold */}
+        {/* Inner flame */}
         <motion.path
           d="M50 30 C50 30, 28 70, 28 95 C28 112, 38 130, 50 133 C62 130, 72 112, 72 95 C72 70, 50 30, 50 30Z"
           fill="url(#innerFlameGrad)"
@@ -93,48 +89,39 @@ export default function FlameAnimation({
               "M50 30 C50 30, 28 70, 28 95 C28 112, 38 130, 50 133 C62 130, 72 112, 72 95 C72 70, 50 30, 50 30Z",
             ],
           }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Core — white hot */}
+        {/* White-hot core */}
         <motion.ellipse
           cx="50"
-          cy="110"
-          rx="12"
-          ry="18"
+          cy="115"
+          rx="10"
+          ry="15"
           fill="url(#coreGrad)"
           animate={{
-            rx: [12, 10, 13, 11, 12],
-            ry: [18, 20, 17, 19, 18],
+            rx: [10, 8, 11, 9, 10],
+            ry: [15, 17, 14, 16, 15],
           }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Gradient definitions */}
         <defs>
           <linearGradient id="outerFlameGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#FF4500" stopOpacity="0.9" />
-            <stop offset="40%" stopColor="#FF6600" stopOpacity="0.95" />
-            <stop offset="70%" stopColor="#DAA520" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#8B0000" stopOpacity="0.6" />
+            <stop offset="0%" stopColor="#D94E1F" stopOpacity="0.85" />
+            <stop offset="40%" stopColor="#E8720C" stopOpacity="0.9" />
+            <stop offset="70%" stopColor="#C4993B" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="#6B1010" stopOpacity="0.5" />
           </linearGradient>
           <linearGradient id="innerFlameGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#FFD700" stopOpacity="0.95" />
-            <stop offset="50%" stopColor="#FFA500" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#FF6600" stopOpacity="0.7" />
+            <stop offset="0%" stopColor="#FFD700" stopOpacity="0.9" />
+            <stop offset="50%" stopColor="#FF8C42" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="#E8720C" stopOpacity="0.6" />
           </linearGradient>
           <radialGradient id="coreGrad">
-            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
-            <stop offset="40%" stopColor="#FFF8DC" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#FFD700" stopOpacity="0.5" />
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+            <stop offset="40%" stopColor="#FFF8DC" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="#FFD700" stopOpacity="0.3" />
           </radialGradient>
         </defs>
       </motion.svg>

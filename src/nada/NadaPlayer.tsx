@@ -9,11 +9,11 @@ interface FrequencyBand {
   name: string;
   element: string;
   hz: string;
-  frequency: number; // actual Hz value for oscillator
-  binaural?: { left: number; right: number }; // for binaural beats
+  frequency: number;
+  binaural?: { left: number; right: number };
   kosha: string;
   mantra: string;
-  mantreDevanagari: string;
+  mantraDevanagari: string;
   description: string;
   color: string;
 }
@@ -26,9 +26,9 @@ const BANDS: FrequencyBand[] = [
     frequency: 396,
     kosha: "Annamaya",
     mantra: "LAM",
-    mantreDevanagari: "लम्",
-    description: "Grounding frequencies resonating with the physical body. Fear release, physical anchoring.",
-    color: "#8B4513",
+    mantraDevanagari: "लम्",
+    description: "Grounding. Fear release. Physical anchoring.",
+    color: "#8B6B4A",
   },
   {
     name: "Apas",
@@ -37,9 +37,9 @@ const BANDS: FrequencyBand[] = [
     frequency: 528,
     kosha: "Pranamaya",
     mantra: "VAM",
-    mantreDevanagari: "वम्",
-    description: "Flow frequencies activating prana and vital energy. DNA repair research.",
-    color: "#1E90FF",
+    mantraDevanagari: "वम्",
+    description: "Flow. Vital energy. DNA repair frequency.",
+    color: "#4A7B9B",
   },
   {
     name: "Agni",
@@ -48,21 +48,21 @@ const BANDS: FrequencyBand[] = [
     frequency: 432,
     kosha: "Manomaya",
     mantra: "RAM",
-    mantreDevanagari: "रम्",
-    description: "Natural tuning frequency. Mental clarity, transformative energy.",
-    color: "#FF4500",
+    mantraDevanagari: "रम्",
+    description: "Natural tuning. Mental clarity. Transformation.",
+    color: "#C4663B",
   },
   {
     name: "Vayu",
     element: "Air",
-    hz: "Binaural 4-8 Hz",
+    hz: "Theta 4-8 Hz",
     frequency: 200,
-    binaural: { left: 200, right: 206 }, // 6 Hz difference = theta
+    binaural: { left: 200, right: 206 },
     kosha: "Vijnanamaya",
     mantra: "OM",
-    mantreDevanagari: "ॐ",
-    description: "Expansive frequencies for intuitive wisdom. Deep meditation access.",
-    color: "#9370DB",
+    mantraDevanagari: "ॐ",
+    description: "Expansion. Deep meditation access. Intuitive wisdom.",
+    color: "#6B4B8A",
   },
   {
     name: "Akasha",
@@ -71,9 +71,9 @@ const BANDS: FrequencyBand[] = [
     frequency: 136.1,
     kosha: "Anandamaya",
     mantra: "AUM",
-    mantreDevanagari: "ॐ",
-    description: "Earth year frequency — the cosmic OM. Bliss states, cosmic alignment.",
-    color: "#FFD700",
+    mantraDevanagari: "ॐ",
+    description: "Earth year frequency. Cosmic alignment. Bliss.",
+    color: "#9B8A4A",
   },
 ];
 
@@ -91,7 +91,6 @@ export default function NadaPlayer() {
   const stopAudio = useCallback(() => {
     if (audioRef.current) {
       const { oscillators, gainNode, ctx } = audioRef.current;
-      // Fade out to avoid clicks
       gainNode.gain.setTargetAtTime(0, ctx.currentTime, 0.1);
       setTimeout(() => {
         oscillators.forEach((osc) => {
@@ -105,55 +104,46 @@ export default function NadaPlayer() {
 
   const playFrequency = useCallback((bandIndex: number) => {
     stopAudio();
-
     const band = BANDS[bandIndex];
     const ctx = new AudioContext();
     const gainNode = ctx.createGain();
     gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.setTargetAtTime(0.3, ctx.currentTime, 0.3); // fade in
+    gainNode.gain.setTargetAtTime(0.3, ctx.currentTime, 0.3);
     gainNode.connect(ctx.destination);
-
     const oscillators: OscillatorNode[] = [];
 
     if (band.binaural) {
-      // Binaural beats: different frequency in each ear via stereo panner
       const mergerNode = ctx.createChannelMerger(2);
       mergerNode.connect(gainNode);
-
       const oscLeft = ctx.createOscillator();
       oscLeft.type = "sine";
       oscLeft.frequency.setValueAtTime(band.binaural.left, ctx.currentTime);
       const gainLeft = ctx.createGain();
       gainLeft.gain.setValueAtTime(1, ctx.currentTime);
       oscLeft.connect(gainLeft);
-      gainLeft.connect(mergerNode, 0, 0); // left channel
-
+      gainLeft.connect(mergerNode, 0, 0);
       const oscRight = ctx.createOscillator();
       oscRight.type = "sine";
       oscRight.frequency.setValueAtTime(band.binaural.right, ctx.currentTime);
       const gainRight = ctx.createGain();
       gainRight.gain.setValueAtTime(1, ctx.currentTime);
       oscRight.connect(gainRight);
-      gainRight.connect(mergerNode, 0, 1); // right channel
-
+      gainRight.connect(mergerNode, 0, 1);
       oscLeft.start();
       oscRight.start();
       oscillators.push(oscLeft, oscRight);
     } else {
-      // Single tone with a subtle harmonic layer
       const osc = ctx.createOscillator();
       osc.type = "sine";
       osc.frequency.setValueAtTime(band.frequency, ctx.currentTime);
       osc.connect(gainNode);
       osc.start();
       oscillators.push(osc);
-
-      // Subtle overtone for richness
       const overtone = ctx.createOscillator();
       overtone.type = "sine";
       overtone.frequency.setValueAtTime(band.frequency * 2, ctx.currentTime);
       const overtoneGain = ctx.createGain();
-      overtoneGain.gain.setValueAtTime(0.08, ctx.currentTime);
+      overtoneGain.gain.setValueAtTime(0.06, ctx.currentTime);
       overtone.connect(overtoneGain);
       overtoneGain.connect(gainNode);
       overtone.start();
@@ -163,7 +153,6 @@ export default function NadaPlayer() {
     audioRef.current = { ctx, oscillators, gainNode };
   }, [stopAudio]);
 
-  // Stop audio on route change
   const pathname = usePathname();
   useEffect(() => {
     if (pathname !== "/nada") {
@@ -173,7 +162,6 @@ export default function NadaPlayer() {
     }
   }, [pathname, stopAudio]);
 
-  // Cleanup on unmount + mobile back/swipe/tab switch
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
@@ -182,11 +170,7 @@ export default function NadaPlayer() {
         setIsPlaying(false);
       }
     };
-
-    const handleBeforeUnload = () => {
-      stopAudio();
-    };
-
+    const handleBeforeUnload = () => stopAudio();
     const handlePopState = () => {
       stopAudio();
       setActiveBand(null);
@@ -207,12 +191,10 @@ export default function NadaPlayer() {
 
   const toggleBand = (index: number) => {
     if (activeBand === index) {
-      // Stop
       stopAudio();
       setActiveBand(null);
       setIsPlaying(false);
     } else {
-      // Play new band
       playFrequency(index);
       setActiveBand(index);
       setIsPlaying(true);
@@ -220,141 +202,152 @@ export default function NadaPlayer() {
   };
 
   return (
-    <div className="min-h-screen px-4 py-6 sm:p-8 pt-16 sm:pt-8 max-w-4xl mx-auto">
+    <div className="min-h-screen realm-water">
       <BackToMandala onBeforeNavigate={stopAudio} />
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="font-sacred text-4xl text-vedic-gold mb-2">Nada</h1>
-        <p className="font-devanagari text-2xl text-vedic-parchment/60">नाद</p>
-        <p className="text-vedic-parchment/40 mt-4 max-w-lg mx-auto">
-          Nada Brahma — the universe is sound. The Vedas were never meant to be
-          read. They are vibrational technology.
-        </p>
+
+      {/* Header — centered, spacious */}
+      <div className="text-center pt-20 sm:pt-16 pb-8 px-6">
+        <motion.h1
+          className="font-devanagari text-display text-vedic-parchment/60"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 2 }}
+        >
+          नाद
+        </motion.h1>
+        <motion.p
+          className="font-sans text-[11px] tracking-[0.3em] uppercase text-vedic-parchment/15 mt-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 1.5 }}
+        >
+          The universe is sound
+        </motion.p>
       </div>
 
-      {/* Sound wave visualization */}
-      <div className="flex justify-center mb-12">
-        <svg width="400" height="80" viewBox="0 0 400 80" className="opacity-40">
-          {[...Array(50)].map((_, i) => {
-            const height = activeBand !== null
-              ? 10 + Math.sin(i * 0.3 + Date.now() / 500) * 25
-              : 10 + Math.sin(i * 0.5) * 5;
-            return (
-              <motion.rect
-                key={i}
-                x={i * 8}
-                y={40 - height / 2}
-                width="3"
-                height={height}
-                fill={activeBand !== null ? BANDS[activeBand].color : "#DAA520"}
-                rx="1.5"
-                animate={
-                  isPlaying
-                    ? {
-                        height: [height, height * 1.5, height * 0.7, height],
-                        y: [40 - height / 2, 40 - (height * 1.5) / 2, 40 - (height * 0.7) / 2, 40 - height / 2],
-                      }
-                    : {}
-                }
-                transition={{
-                  duration: 0.8,
-                  repeat: Infinity,
-                  delay: i * 0.05,
-                }}
-              />
-            );
-          })}
-        </svg>
-      </div>
-
-      {/* Frequency bands */}
-      <div className="space-y-4">
-        {BANDS.map((band, i) => (
+      {/* Central ripple visualization */}
+      <div className="flex justify-center mb-12 sm:mb-16">
+        <div className="relative w-40 h-40 sm:w-52 sm:h-52">
+          {/* Ripple rings when playing */}
+          {isPlaying && activeBand !== null && (
+            <>
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="absolute inset-0 rounded-full border"
+                  style={{ borderColor: `${BANDS[activeBand].color}15` }}
+                  animate={{ scale: [1, 2.5], opacity: [0.3, 0] }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    delay: i * 1,
+                    ease: "easeOut",
+                  }}
+                />
+              ))}
+            </>
+          )}
+          {/* Center circle */}
           <motion.div
-            key={i}
-            className={`sacred-card p-6 cursor-pointer transition-all ${
-              activeBand === i ? "border-opacity-60" : ""
-            }`}
+            className="absolute inset-0 m-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center"
             style={{
-              borderColor: activeBand === i ? band.color : undefined,
+              background: activeBand !== null
+                ? `radial-gradient(circle, ${BANDS[activeBand].color}15 0%, transparent 70%)`
+                : "radial-gradient(circle, rgba(196,153,59,0.06) 0%, transparent 70%)",
             }}
-            whileHover={{ scale: 1.01 }}
-            onClick={() => toggleBand(i)}
+            animate={isPlaying ? { scale: [1, 1.08, 1] } : {}}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-baseline gap-3 mb-2">
-                  <h3 className="font-sacred text-xl" style={{ color: band.color }}>
-                    {band.name}
-                  </h3>
-                  <span className="text-vedic-parchment/40 text-sm">
-                    {band.element}
+            <span
+              className="font-devanagari text-2xl sm:text-3xl"
+              style={{ color: activeBand !== null ? `${BANDS[activeBand].color}90` : "rgba(196,153,59,0.25)" }}
+            >
+              {activeBand !== null ? BANDS[activeBand].mantraDevanagari : "ॐ"}
+            </span>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Frequency bands — minimal rows */}
+      <div className="max-w-2xl mx-auto px-6 space-y-1">
+        {BANDS.map((band, i) => {
+          const isActive = activeBand === i;
+          return (
+            <motion.button
+              key={i}
+              className="w-full text-left px-5 py-5 rounded-xl transition-all duration-500"
+              style={{
+                background: isActive ? `${band.color}08` : "transparent",
+              }}
+              onClick={() => toggleBand(i)}
+              whileTap={{ scale: 0.99 }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-baseline gap-3">
+                  <span
+                    className="font-devanagari text-lg"
+                    style={{ color: isActive ? band.color : `${band.color}50` }}
+                  >
+                    {band.mantraDevanagari}
                   </span>
-                  <span className="text-vedic-parchment/30 text-xs">
-                    {band.kosha} Kosha
+                  <span
+                    className="font-sans text-sm transition-colors duration-500"
+                    style={{ color: isActive ? `${band.color}CC` : "rgba(232,220,200,0.25)" }}
+                  >
+                    {band.name}
+                  </span>
+                  <span className="text-vedic-parchment/10 text-[11px] font-sans hidden sm:inline">
+                    {band.hz}
                   </span>
                 </div>
-                <p className="text-vedic-parchment/60 text-sm mb-3">
-                  {band.description}
-                </p>
-                <div className="flex items-center gap-6">
-                  <div>
-                    <span className="text-vedic-parchment/30 text-xs uppercase">
-                      Frequency
-                    </span>
-                    <p className="text-vedic-parchment/80 font-mono text-sm">
-                      {band.hz}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-vedic-parchment/30 text-xs uppercase">
-                      Bija Mantra
-                    </span>
-                    <p className="font-devanagari text-lg" style={{ color: band.color }}>
-                      {band.mantreDevanagari}
-                    </p>
+                <div className="flex items-center gap-3">
+                  <span className="text-vedic-parchment/10 text-[10px] font-sans hidden sm:inline">
+                    {band.element}
+                  </span>
+                  {/* Play/Pause indicator */}
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-500"
+                    style={{
+                      borderColor: isActive ? `${band.color}40` : "rgba(255,255,255,0.04)",
+                      background: isActive ? `${band.color}10` : "transparent",
+                    }}
+                  >
+                    {isActive && isPlaying ? (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill={`${band.color}90`}>
+                        <rect x="6" y="4" width="4" height="16" />
+                        <rect x="14" y="4" width="4" height="16" />
+                      </svg>
+                    ) : (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill={isActive ? `${band.color}90` : "rgba(255,255,255,0.08)"}>
+                        <polygon points="5 3 19 12 5 21" />
+                      </svg>
+                    )}
                   </div>
                 </div>
               </div>
-
-              {/* Play button */}
-              <motion.button
-                className="w-12 h-12 rounded-full flex items-center justify-center border"
-                style={{
-                  borderColor: band.color,
-                  backgroundColor: activeBand === i ? `${band.color}20` : "transparent",
-                }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                {activeBand === i && isPlaying ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill={band.color}>
-                    <rect x="6" y="4" width="4" height="16" />
-                    <rect x="14" y="4" width="4" height="16" />
-                  </svg>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill={band.color}>
-                    <polygon points="5 3 19 12 5 21" />
-                  </svg>
-                )}
-              </motion.button>
-            </div>
-          </motion.div>
-        ))}
+              {/* Expanded detail when active */}
+              {isActive && (
+                <motion.p
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="text-vedic-parchment/25 text-[12px] mt-3 font-sans"
+                >
+                  {band.description}
+                </motion.p>
+              )}
+            </motion.button>
+          );
+        })}
       </div>
 
-      {/* Gayatri Mantra section */}
-      <div className="mt-12 sacred-card p-8 text-center">
-        <h3 className="font-sacred text-xl text-vedic-gold mb-4">Gayatri Mantra</h3>
-        <p className="font-devanagari text-xl text-vedic-parchment/80 leading-relaxed mb-4">
+      {/* Gayatri Mantra — at the bottom, subtle */}
+      <div className="mt-16 sm:mt-20 pb-12 text-center px-6">
+        <div className="divider mb-8 max-w-lg mx-auto" />
+        <p className="font-devanagari text-sm sm:text-base text-vedic-parchment/20 leading-relaxed max-w-md mx-auto">
           ओं भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्
         </p>
-        <p className="text-vedic-parchment/40 text-sm italic">
-          Om bhur bhuvah svah tat savitur varenyam bhargo devasya dhimahi dhiyo
-          yo nah prachodayat
-        </p>
-        <p className="text-vedic-parchment/30 text-xs mt-4">
-          Composed by Vishwamitra — 432 Hz — Anandamaya Kosha
+        <p className="text-vedic-parchment/8 text-[10px] mt-4 font-sans tracking-wider uppercase">
+          Gayatri Mantra · Vishwamitra · 432 Hz
         </p>
       </div>
     </div>

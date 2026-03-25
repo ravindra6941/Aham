@@ -11,7 +11,6 @@ interface Petal {
   route: string;
   angle: number;
   color: string;
-  icon: React.ReactNode;
   description: string;
 }
 
@@ -22,15 +21,8 @@ const PETALS: Petal[] = [
     sanskrit: "ऋषि",
     route: "/rishi",
     angle: 0,
-    color: "#FF6600",
+    color: "#E8720C",
     description: "Your assigned guide",
-    icon: (
-      <svg viewBox="0 0 40 40" className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="20" cy="12" r="6" />
-        <path d="M8 36c0-8 5-14 12-14s12 6 12 14" />
-        <path d="M20 6c-2-4 0-6 0-6s2 2 0 6" strokeOpacity="0.6" />
-      </svg>
-    ),
   },
   {
     id: "antahkarana",
@@ -38,17 +30,8 @@ const PETALS: Petal[] = [
     sanskrit: "अन्तःकरण",
     route: "/antahkarana",
     angle: 60,
-    color: "#DAA520",
+    color: "#C4993B",
     description: "The inner instrument",
-    icon: (
-      <svg viewBox="0 0 40 40" className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="20" cy="20" r="16" strokeOpacity="0.3" />
-        <circle cx="20" cy="20" r="12" strokeOpacity="0.5" />
-        <circle cx="20" cy="20" r="8" strokeOpacity="0.7" />
-        <circle cx="20" cy="20" r="4" strokeOpacity="0.9" />
-        <circle cx="20" cy="20" r="1.5" fill="currentColor" />
-      </svg>
-    ),
   },
   {
     id: "nada",
@@ -56,15 +39,8 @@ const PETALS: Petal[] = [
     sanskrit: "नाद",
     route: "/nada",
     angle: 120,
-    color: "#8B0000",
+    color: "#6B4B8A",
     description: "Sacred sound",
-    icon: (
-      <svg viewBox="0 0 40 40" className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M10 20c2-8 4-8 6 0s4 8 6 0 4-8 6 0" />
-        <circle cx="20" cy="28" r="3" strokeOpacity="0.5" />
-        <path d="M14 32c0 0 3 4 6 4s6-4 6-4" strokeOpacity="0.3" />
-      </svg>
-    ),
   },
   {
     id: "yajna",
@@ -72,17 +48,8 @@ const PETALS: Petal[] = [
     sanskrit: "यज्ञ",
     route: "/yajna",
     angle: 180,
-    color: "#FF4500",
+    color: "#D94E1F",
     description: "Sacred offering",
-    icon: (
-      <svg viewBox="0 0 40 40" className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 32h16" />
-        <path d="M14 32l6-18 6 18" />
-        <path d="M20 14c-1-3 0-6 0-6s1 3 0 6" />
-        <path d="M17 18c-2-2-1-5-1-5s2 1 1 5" strokeOpacity="0.7" />
-        <path d="M23 18c2-2 1-5 1-5s-2 1-1 5" strokeOpacity="0.7" />
-      </svg>
-    ),
   },
   {
     id: "sabha",
@@ -90,16 +57,8 @@ const PETALS: Petal[] = [
     sanskrit: "सभा",
     route: "/sabha",
     angle: 240,
-    color: "#2D1B69",
+    color: "#3A6B8A",
     description: "The assembly",
-    icon: (
-      <svg viewBox="0 0 40 40" className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="20" cy="10" r="4" />
-        <circle cx="10" cy="26" r="4" />
-        <circle cx="30" cy="26" r="4" />
-        <path d="M20 14v6m-7 3l5-3m9 3l-5-3" strokeOpacity="0.5" />
-      </svg>
-    ),
   },
   {
     id: "discovery",
@@ -107,16 +66,8 @@ const PETALS: Petal[] = [
     sanskrit: "अन्वेषण",
     route: "/discovery",
     angle: 300,
-    color: "#F5E6C8",
+    color: "#8A7B5E",
     description: "Scientific bridge",
-    icon: (
-      <svg viewBox="0 0 40 40" className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="20" cy="20" r="14" strokeDasharray="3 3" />
-        <path d="M20 6v28M6 20h28" strokeOpacity="0.3" />
-        <path d="M10 10l20 20M30 10l-20 20" strokeOpacity="0.2" />
-        <circle cx="20" cy="20" r="3" fill="currentColor" fillOpacity="0.3" />
-      </svg>
-    ),
   },
 ];
 
@@ -125,9 +76,11 @@ function useRadius() {
   useEffect(() => {
     function update() {
       const w = window.innerWidth;
-      if (w < 400) setRadius(105);
-      else if (w < 640) setRadius(120);
-      else if (w < 768) setRadius(140);
+      const h = window.innerHeight;
+      const min = Math.min(w, h);
+      if (min < 400) setRadius(95);
+      else if (min < 640) setRadius(115);
+      else if (min < 768) setRadius(145);
       else setRadius(180);
     }
     update();
@@ -140,101 +93,104 @@ function useRadius() {
 export default function MandalaNav() {
   const [hoveredPetal, setHoveredPetal] = useState<string | null>(null);
   const [tappedPetal, setTappedPetal] = useState<string | null>(null);
+  const [visited, setVisited] = useState<Set<string>>(new Set());
   const router = useRouter();
   const radius = useRadius();
 
-  // Petal size: smaller on mobile
-  const petalSize = radius < 130 ? 56 : radius < 150 ? 64 : 96;
+  // Track which petals the user has visited
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("aham_visited_petals");
+      if (stored) setVisited(new Set(JSON.parse(stored)));
+    } catch {}
+  }, []);
+
+  const petalSize = radius < 130 ? 60 : radius < 155 ? 72 : 88;
   const halfPetal = petalSize / 2;
 
   const handlePetalClick = (petal: Petal) => {
-    // On touch devices, first tap reveals label, second tap navigates
     if ("ontouchstart" in window) {
       if (tappedPetal === petal.id) {
+        markVisited(petal.id);
         router.push(petal.route);
       } else {
         setTappedPetal(petal.id);
       }
     } else {
+      markVisited(petal.id);
       router.push(petal.route);
     }
   };
 
+  const markVisited = (id: string) => {
+    const next = new Set(visited);
+    next.add(id);
+    setVisited(next);
+    try {
+      localStorage.setItem("aham_visited_petals", JSON.stringify(Array.from(next)));
+    } catch {}
+  };
+
   return (
     <div
-      className="relative flex items-center justify-center w-full overflow-hidden"
-      style={{ minHeight: "100dvh" }}
+      className="relative flex items-center justify-center w-full overflow-hidden realm-cosmos"
+      style={{ height: "100dvh" }}
       onClick={(e) => {
-        // Clear tapped petal when clicking empty space
         if (e.target === e.currentTarget) setTappedPetal(null);
       }}
     >
-      {/* Outer rings — responsive */}
-      {[0, 1, 2].map((i) => {
-        const ringSize = (radius * 2) + 40 + i * 40;
-        return (
-          <motion.div
-            key={i}
-            className="absolute rounded-full border"
-            style={{
-              width: ringSize,
-              height: ringSize,
-              borderColor: `rgba(218, 165, 32, ${0.05 + i * 0.02})`,
-              willChange: "transform",
-            }}
-            animate={{ rotate: 360 * (i % 2 === 0 ? 1 : -1) }}
-            transition={{
-              duration: 120 + i * 40,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        );
-      })}
+      {/* Subtle ring */}
+      <motion.div
+        className="absolute rounded-full border border-white/[0.02]"
+        style={{ width: radius * 2 + 30, height: radius * 2 + 30 }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
+      />
 
-      {/* Central Atman point */}
+      {/* Central Atman — the heartbeat */}
       <motion.div
         className="absolute z-20 cursor-pointer"
-        whileHover={{ scale: 1.2 }}
+        whileHover={{ scale: 1.15 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setTappedPetal(null)}
       >
-        <div className="relative">
+        <div className="relative flex flex-col items-center">
           <motion.div
-            className="w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center relative"
             style={{
               background:
-                "radial-gradient(circle, rgba(255,102,0,0.8) 0%, rgba(218,165,32,0.4) 50%, transparent 70%)",
+                "radial-gradient(circle, rgba(232,114,12,0.25) 0%, rgba(196,153,59,0.08) 50%, transparent 70%)",
             }}
             animate={{
               boxShadow: [
-                "0 0 20px rgba(255,102,0,0.3)",
-                "0 0 40px rgba(255,102,0,0.5)",
-                "0 0 20px rgba(255,102,0,0.3)",
+                "0 0 30px rgba(232,114,12,0.1), 0 0 60px rgba(232,114,12,0.05)",
+                "0 0 50px rgba(232,114,12,0.2), 0 0 100px rgba(232,114,12,0.08)",
+                "0 0 30px rgba(232,114,12,0.1), 0 0 60px rgba(232,114,12,0.05)",
               ],
             }}
-            transition={{ duration: 3, repeat: Infinity }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
-            <span className="font-devanagari text-lg sm:text-xl text-white font-bold">
+            <span className="font-devanagari text-2xl text-vedic-parchment/90">
               अ
             </span>
           </motion.div>
           <motion.p
-            className="absolute -bottom-6 sm:-bottom-8 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs text-vedic-gold/50 font-sacred whitespace-nowrap"
-            animate={{ opacity: [0.3, 0.7, 0.3] }}
-            transition={{ duration: 4, repeat: Infinity }}
+            className="absolute -bottom-7 text-[9px] tracking-[0.3em] uppercase text-vedic-parchment/15 font-sans"
+            animate={{ opacity: [0.15, 0.35, 0.15] }}
+            transition={{ duration: 5, repeat: Infinity }}
           >
             ATMAN
           </motion.p>
         </div>
       </motion.div>
 
-      {/* Six petals */}
-      {PETALS.map((petal) => {
+      {/* Petals — points of light */}
+      {PETALS.map((petal, index) => {
         const angleRad = ((petal.angle - 90) * Math.PI) / 180;
         const x = Math.cos(angleRad) * radius;
         const y = Math.sin(angleRad) * radius;
         const isActive = hoveredPetal === petal.id || tappedPetal === petal.id;
+        const hasVisited = visited.has(petal.id);
 
         return (
           <motion.div
@@ -246,34 +202,37 @@ export default function MandalaNav() {
               width: petalSize,
               height: petalSize,
             }}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{
+              delay: 0.3 + index * 0.1,
+              duration: 0.8,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             onHoverStart={() => setHoveredPetal(petal.id)}
             onHoverEnd={() => setHoveredPetal(null)}
             onClick={() => handlePetalClick(petal)}
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.92 }}
           >
             <motion.div
               className="w-full h-full rounded-full flex flex-col items-center justify-center relative"
               style={{
-                background: `radial-gradient(circle, ${petal.color}20 0%, ${petal.color}08 60%, transparent 70%)`,
-                border: `1px solid ${petal.color}30`,
+                background: isActive
+                  ? `radial-gradient(circle, ${petal.color}18 0%, ${petal.color}06 60%, transparent 80%)`
+                  : `radial-gradient(circle, ${petal.color}${hasVisited ? '0D' : '06'} 0%, transparent 70%)`,
               }}
-              animate={
-                isActive
-                  ? {
-                      boxShadow: `0 0 30px ${petal.color}40`,
-                      borderColor: `${petal.color}60`,
-                    }
-                  : {
-                      boxShadow: `0 0 10px ${petal.color}10`,
-                      borderColor: `${petal.color}20`,
-                    }
-              }
+              animate={{
+                boxShadow: isActive
+                  ? `0 0 40px ${petal.color}20, 0 0 80px ${petal.color}08`
+                  : `0 0 ${hasVisited ? '20' : '8'}px ${petal.color}${hasVisited ? '0A' : '04'}`,
+              }}
+              transition={{ duration: 0.6 }}
             >
-              <div style={{ color: petal.color }}>{petal.icon}</div>
+              {/* Devanagari as the primary identifier */}
               <span
-                className="font-devanagari text-[9px] sm:text-xs mt-0.5"
-                style={{ color: petal.color }}
+                className="font-devanagari text-base sm:text-lg"
+                style={{ color: isActive ? petal.color : `${petal.color}${hasVisited ? 'AA' : '60'}` }}
               >
                 {petal.sanskrit}
               </span>
@@ -283,18 +242,19 @@ export default function MandalaNav() {
             <AnimatePresence>
               {isActive && (
                 <motion.div
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap text-center pointer-events-none"
-                  initial={{ opacity: 0, y: -5 }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2 whitespace-nowrap text-center pointer-events-none"
+                  initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -5 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.3 }}
                 >
                   <p
-                    className="font-sacred text-xs sm:text-sm font-semibold"
-                    style={{ color: petal.color }}
+                    className="font-sans text-[11px] tracking-wider uppercase"
+                    style={{ color: `${petal.color}CC` }}
                   >
                     {petal.name}
                   </p>
-                  <p className="text-vedic-parchment/40 text-[10px] sm:text-xs hidden sm:block">
+                  <p className="text-vedic-parchment/20 text-[10px] mt-0.5 hidden sm:block">
                     {petal.description}
                   </p>
                 </motion.div>
@@ -303,33 +263,6 @@ export default function MandalaNav() {
           </motion.div>
         );
       })}
-
-      {/* Connecting lines — hidden on mobile for clarity */}
-      <svg
-        className="absolute pointer-events-none hidden sm:block"
-        width="500"
-        height="500"
-        viewBox="-250 -250 500 500"
-      >
-        {PETALS.map((petal) => {
-          const angleRad = ((petal.angle - 90) * Math.PI) / 180;
-          const x = Math.cos(angleRad) * (radius - 48);
-          const y = Math.sin(angleRad) * (radius - 48);
-          return (
-            <line
-              key={petal.id}
-              x1="0"
-              y1="0"
-              x2={x}
-              y2={y}
-              stroke={petal.color}
-              strokeWidth="0.5"
-              strokeOpacity="0.15"
-              strokeDasharray="4 8"
-            />
-          );
-        })}
-      </svg>
     </div>
   );
 }

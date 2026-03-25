@@ -14,7 +14,6 @@ interface Discussion {
   createdAt: string;
 }
 
-// Seed discussions for the Sabha
 const SEED_DISCUSSIONS: Discussion[] = [
   {
     id: "1",
@@ -57,125 +56,133 @@ export default function SabhaForum() {
     : discussions;
 
   return (
-    <div className="min-h-screen px-4 py-6 sm:p-8 pt-16 sm:pt-8 max-w-4xl mx-auto">
+    <div className="min-h-screen realm-ether">
       <BackToMandala />
+
       {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="font-sacred text-4xl text-vedic-gold mb-2">Sabha</h1>
-        <p className="font-devanagari text-2xl text-vedic-parchment/60">सभा</p>
-        <p className="text-vedic-parchment/40 mt-4 max-w-lg mx-auto">
-          Not a forum. An ancient assembly. Where researchers, meditators,
-          scientists, and seekers debate across disciplines.
-        </p>
-      </div>
-
-      {/* Disagreement Engine banner */}
-      <div className="sacred-card p-6 mb-8 border-vedic-dawn/30">
-        <p className="font-sacred text-lg text-vedic-parchment/70 mb-2">
-          The Disagreement Engine
-        </p>
-        <p className="text-vedic-parchment/40 text-sm">
-          The most intellectually alive thing about Vedic knowledge is that the
-          greatest minds disagreed violently about what it means. This tension is
-          where the insight lives.
-        </p>
-      </div>
-
-      {/* Tags filter */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        <button
-          className={`px-3 py-1 rounded-full text-xs border transition-colors ${
-            selectedTag === null
-              ? "border-vedic-gold/50 text-vedic-gold"
-              : "border-vedic-ash/30 text-vedic-parchment/40 hover:border-vedic-gold/30"
-          }`}
-          onClick={() => setSelectedTag(null)}
+      <div className="text-center pt-20 sm:pt-16 pb-6 px-6">
+        <motion.h1
+          className="font-devanagari text-display text-vedic-parchment/50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 2 }}
         >
-          All
-        </button>
-        {allTags.map((tag) => (
-          <button
-            key={tag}
-            className={`px-3 py-1 rounded-full text-xs border transition-colors ${
-              selectedTag === tag
-                ? "border-vedic-gold/50 text-vedic-gold"
-                : "border-vedic-ash/30 text-vedic-parchment/40 hover:border-vedic-gold/30"
-            }`}
-            onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-          >
-            {tag}
-          </button>
-        ))}
+          सभा
+        </motion.h1>
+        <motion.p
+          className="font-sans text-[11px] tracking-[0.3em] uppercase text-vedic-parchment/15 mt-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 1.5 }}
+        >
+          The Assembly
+        </motion.p>
+        <motion.p
+          className="text-vedic-parchment/20 mt-6 max-w-md mx-auto text-sm font-sans leading-relaxed"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 1.5 }}
+        >
+          The greatest minds disagreed violently about what the Vedas mean.
+          This tension is where the insight lives.
+        </motion.p>
       </div>
 
-      {/* New post */}
-      <button
-        className="mb-8 px-6 py-3 border border-vedic-gold/30 text-vedic-gold font-sacred hover:bg-vedic-gold/10 transition-colors rounded"
-        onClick={() => setShowNewPost(!showNewPost)}
-      >
-        {showNewPost ? "Cancel" : "Start a Discussion"}
-      </button>
-
-      <AnimatePresence>
-        {showNewPost && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="sacred-card p-6 mb-8"
+      <div className="max-w-2xl mx-auto px-6">
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          <button
+            className={`px-3 py-1 rounded-full text-[10px] tracking-wider uppercase font-sans transition-all duration-500 ${
+              selectedTag === null
+                ? "text-vedic-parchment/40 bg-white/[0.03]"
+                : "text-vedic-parchment/15 hover:text-vedic-parchment/25"
+            }`}
+            onClick={() => setSelectedTag(null)}
           >
-            <input
-              type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Discussion title..."
-              className="w-full bg-transparent border-b border-vedic-gold/20 text-vedic-parchment font-sacred text-lg p-2 mb-4 outline-none placeholder:text-vedic-parchment/20"
-            />
-            <textarea
-              value={newBody}
-              onChange={(e) => setNewBody(e.target.value)}
-              placeholder="Present your position. Cite verses. Invite disagreement."
-              className="w-full bg-transparent text-vedic-parchment/70 resize-none outline-none placeholder:text-vedic-parchment/20 min-h-[100px]"
-            />
-            <button className="mt-4 px-6 py-2 bg-vedic-saffron/20 text-vedic-saffron border border-vedic-saffron/30 rounded font-sacred hover:bg-vedic-saffron/30 transition-colors">
-              Post to Sabha
+            All
+          </button>
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              className={`px-3 py-1 rounded-full text-[10px] tracking-wider uppercase font-sans transition-all duration-500 ${
+                selectedTag === tag
+                  ? "text-vedic-parchment/40 bg-white/[0.03]"
+                  : "text-vedic-parchment/15 hover:text-vedic-parchment/25"
+              }`}
+              onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+            >
+              {tag}
             </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          ))}
+        </div>
 
-      {/* Discussions list */}
-      <div className="space-y-4">
-        {filtered.map((d) => (
-          <motion.div
-            key={d.id}
-            className="sacred-card p-6 cursor-pointer hover:border-vedic-gold/30 transition-colors"
-            whileHover={{ scale: 1.005 }}
-          >
-            <h3 className="font-sacred text-lg text-vedic-parchment/90 mb-2">
-              {d.title}
-            </h3>
-            <p className="text-vedic-parchment/50 text-sm mb-4 line-clamp-2">
-              {d.body}
-            </p>
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                {d.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-0.5 rounded-full text-xs border border-vedic-ash/30 text-vedic-parchment/40"
-                  >
-                    {tag}
-                  </span>
-                ))}
+        {/* New post toggle */}
+        <button
+          className="mb-8 px-5 py-2.5 rounded-full border border-white/[0.06] text-vedic-parchment/25 font-sans text-[11px] tracking-wider uppercase hover:bg-white/[0.02] transition-all duration-500"
+          onClick={() => setShowNewPost(!showNewPost)}
+        >
+          {showNewPost ? "Cancel" : "Start a Discussion"}
+        </button>
+
+        <AnimatePresence>
+          {showNewPost && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="glass p-6 mb-8"
+            >
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Discussion title..."
+                className="w-full bg-transparent border-b border-white/[0.06] text-vedic-parchment/60 font-sacred text-lg p-2 mb-4 outline-none placeholder:text-vedic-parchment/10 focus:border-white/[0.12] transition-colors duration-500"
+              />
+              <textarea
+                value={newBody}
+                onChange={(e) => setNewBody(e.target.value)}
+                placeholder="Present your position. Cite verses. Invite disagreement."
+                className="w-full bg-transparent text-vedic-parchment/40 resize-none outline-none placeholder:text-vedic-parchment/10 min-h-[100px] font-sans text-sm"
+              />
+              <button className="mt-4 px-5 py-2 rounded-full border border-vedic-saffron/15 text-vedic-saffron/40 font-sans text-[11px] tracking-wider uppercase hover:bg-vedic-saffron/5 transition-all duration-500">
+                Post
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Discussions */}
+        <div className="space-y-2 pb-12">
+          {filtered.map((d, i) => (
+            <motion.div
+              key={d.id}
+              className="rounded-xl px-5 py-5 cursor-pointer hover:bg-white/[0.01] transition-all duration-500"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1, duration: 0.6 }}
+            >
+              <h3 className="font-sacred text-base sm:text-lg text-vedic-parchment/60 leading-snug mb-2">
+                {d.title}
+              </h3>
+              <p className="text-vedic-parchment/20 text-sm font-sans line-clamp-2 mb-3">
+                {d.body}
+              </p>
+              <div className="flex items-center justify-between">
+                <div className="flex gap-2">
+                  {d.tags.map((tag) => (
+                    <span key={tag} className="text-vedic-parchment/10 text-[9px] font-sans tracking-wider uppercase">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-4 text-[10px] text-vedic-parchment/10 font-sans">
+                  <span>{d.replyCount} replies</span>
+                </div>
               </div>
-              <div className="flex items-center gap-4 text-xs text-vedic-parchment/30">
-                <span>{d.replyCount} replies</span>
-                <span>{d.createdAt}</span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );

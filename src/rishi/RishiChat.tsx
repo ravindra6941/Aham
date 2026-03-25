@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import FlameAnimation from "@/components/FlameAnimation";
 import BackToMandala from "@/components/BackToMandala";
 
 interface Message {
@@ -36,7 +35,6 @@ export default function RishiChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Get assigned rishi from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("aham_user");
     if (stored) {
@@ -47,9 +45,7 @@ export default function RishiChat() {
     }
   }, []);
 
-  // Initial greeting
   useEffect(() => {
-    const info = RISHI_INFO[currentRishi] || RISHI_INFO.narada;
     setMessages([
       {
         id: "1",
@@ -78,7 +74,6 @@ export default function RishiChat() {
     setInput("");
     setIsRishiTyping(true);
 
-    // If this is the first real message, auto-assign a rishi
     if (messages.length <= 1) {
       try {
         const assignRes = await fetch("/api/assign-rishi", {
@@ -93,7 +88,6 @@ export default function RishiChat() {
           const { rishi } = await assignRes.json();
           if (rishi !== currentRishi) {
             setCurrentRishi(rishi);
-            // Save to localStorage
             try {
               const stored = localStorage.getItem("aham_user");
               const user = stored ? JSON.parse(stored) : {};
@@ -105,12 +99,11 @@ export default function RishiChat() {
       } catch {}
     }
 
-    // Try Ollama streaming
     try {
       abortRef.current = new AbortController();
 
       const chatMessages = [...messages, userMsg]
-        .filter((m) => m.id !== "1") // skip greeting
+        .filter((m) => m.id !== "1")
         .map((m) => ({ role: m.role, content: m.content }));
 
       const res = await fetch("/api/chat", {
@@ -126,7 +119,6 @@ export default function RishiChat() {
       if (!res.ok) {
         const err = await res.json();
         if (err.fallback) {
-          // Ollama not running — use fallback
           setOllamaAvailable(false);
           addFallbackResponse(userMsg.content);
           return;
@@ -136,7 +128,6 @@ export default function RishiChat() {
 
       setOllamaAvailable(true);
 
-      // Stream the response
       const rishiMsgId = crypto.randomUUID();
       setMessages((prev) => [
         ...prev,
@@ -174,7 +165,6 @@ export default function RishiChat() {
       }
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
-      // Fallback if Ollama is down
       setOllamaAvailable(false);
       addFallbackResponse(userMsg.content);
     } finally {
@@ -186,10 +176,10 @@ export default function RishiChat() {
     const responses = [
       "You are circling the question, not entering it. Sit with the discomfort. What lies beneath your words?",
       "The Rigveda speaks: 'Truth is one, the wise call it by many names' [RV 1.164.46]. You have given me a name. Now give me the truth behind it.",
-      "I do not answer questions that have not yet been fully asked. Refine. Strip away the decoration. What remains? [speculative]",
-      "There is a sutra that addresses exactly this tension you describe. But you are not ready to receive it yet. First, tell me what you have already tried. [testable]",
-      "Your question echoes something from Mandala IX. The soma verses carry a frequency that matches your inquiry. We shall return to this. [structural_parallel]",
-      "Do not seek comfort in ancient texts. Seek confrontation. The Rishis were not gentle. They were precise. Be precise with me. [verified]",
+      "I do not answer questions that have not yet been fully asked. Refine. Strip away the decoration. What remains?",
+      "There is a sutra that addresses exactly this tension you describe. But you are not ready to receive it yet. First, tell me what you have already tried.",
+      "Your question echoes something from Mandala IX. The soma verses carry a frequency that matches your inquiry. We shall return to this.",
+      "Do not seek comfort in ancient texts. Seek confrontation. The Rishis were not gentle. They were precise. Be precise with me.",
     ];
     setMessages((prev) => [
       ...prev,
@@ -206,183 +196,135 @@ export default function RishiChat() {
   const info = RISHI_INFO[currentRishi] || RISHI_INFO.narada;
 
   return (
-    <div className="flex flex-col h-[100dvh]">
+    <div className="flex flex-col h-[100dvh] realm-fire">
       <BackToMandala />
-      {/* Rishi header */}
-      <div className="flex-shrink-0 border-b border-vedic-gold/10 p-4 sm:p-6 pt-14 sm:pt-6">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="relative">
-            <motion.div
-              className="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center"
-              style={{
-                background:
-                  "radial-gradient(circle, rgba(255,102,0,0.3) 0%, rgba(139,0,0,0.2) 100%)",
-                border: "1px solid rgba(218,165,32,0.3)",
-              }}
-              animate={{
-                boxShadow: [
-                  "0 0 15px rgba(255,102,0,0.2)",
-                  "0 0 25px rgba(255,102,0,0.4)",
-                  "0 0 15px rgba(255,102,0,0.2)",
-                ],
-              }}
-              transition={{ duration: 4, repeat: Infinity }}
-            >
-              <FlameAnimation size="sm" />
-            </motion.div>
-          </div>
+
+      {/* Rishi identity — minimal, just name */}
+      <div className="flex-shrink-0 px-6 sm:px-8 pt-14 sm:pt-8 pb-4">
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
           <div className="flex-1 min-w-0">
-            <h2 className="font-sacred text-lg sm:text-xl text-vedic-saffron truncate">
-              {info.name}
-            </h2>
-            <p className="font-devanagari text-sm text-vedic-gold/60">
-              {info.sanskrit}
-            </p>
-            <p className="text-xs text-vedic-parchment/30 mt-0.5 truncate">
-              {info.lineage} — {info.specialization}
-            </p>
+            <div className="flex items-baseline gap-2">
+              <h2 className="font-devanagari text-xl sm:text-2xl text-vedic-parchment/60">
+                {info.sanskrit}
+              </h2>
+              <span className="font-sans text-[11px] tracking-wider uppercase text-vedic-parchment/20">
+                {info.name}
+              </span>
+            </div>
           </div>
-          {/* Ollama status indicator */}
+          {/* Status dot */}
           {llmAvailable !== null && (
-            <div className="flex-shrink-0" title={llmAvailable ? "Ollama connected" : "Offline mode"}>
-              <div className={`w-2 h-2 rounded-full ${llmAvailable ? "bg-green-500" : "bg-vedic-gold/40"}`} />
+            <div className="flex-shrink-0" title={llmAvailable ? "Connected" : "Offline"}>
+              <div className={`w-1.5 h-1.5 rounded-full ${llmAvailable ? "bg-emerald-500/60" : "bg-vedic-parchment/15"}`} />
             </div>
           )}
         </div>
+        <div className="divider mt-4 max-w-3xl mx-auto" />
       </div>
 
       {/* LLM offline banner */}
       {llmAvailable === false && (
-        <div className="bg-vedic-dawn/30 border-b border-vedic-gold/10 px-4 py-2 text-center">
-          <p className="text-xs text-vedic-gold/60">
-            AI not connected — using placeholder responses. The Rishi awaits a deeper vessel.
-          </p>
+        <div className="px-6 sm:px-8 pb-3">
+          <div className="max-w-3xl mx-auto">
+            <p className="text-[11px] text-vedic-parchment/20 font-sans text-center">
+              AI not connected — using placeholder responses
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
-        <AnimatePresence initial={false}>
-          {messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className={msg.role === "rishi" ? "max-w-3xl" : "max-w-2xl ml-auto"}
-            >
-              {msg.role === "rishi" ? (
-                <div className="rishi-message">
-                  <p className="font-sacred text-base sm:text-xl md:text-2xl leading-relaxed tracking-wide text-vedic-parchment/90 whitespace-pre-wrap">
-                    {msg.content}
-                    {isRishiTyping && msg.id === messages[messages.length - 1]?.id && msg.content && (
-                      <motion.span
-                        className="inline-block w-0.5 h-5 bg-vedic-saffron/60 ml-1 align-middle"
-                        animate={{ opacity: [1, 0] }}
-                        transition={{ duration: 0.8, repeat: Infinity }}
-                      />
-                    )}
-                  </p>
-                  {!isRishiTyping && (
-                    <p className="text-xs text-vedic-gold/20 mt-3 font-sans">
-                      {formatTime(msg.timestamp)}
+      {/* Messages — words in darkness */}
+      <div className="flex-1 overflow-y-auto px-6 sm:px-8 space-y-8 sm:space-y-10 pb-4">
+        <div className="max-w-3xl mx-auto">
+          <AnimatePresence initial={false}>
+            {messages.map((msg, i) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className={`mt-8 sm:mt-10 ${msg.role === "user" ? "ml-auto max-w-[85%] sm:max-w-lg" : ""}`}
+              >
+                {msg.role === "rishi" ? (
+                  <div>
+                    <p className="font-sacred text-lg sm:text-xl md:text-2xl leading-relaxed tracking-wide text-vedic-parchment/80 whitespace-pre-wrap">
+                      {msg.content}
+                      {isRishiTyping && msg.id === messages[messages.length - 1]?.id && msg.content && (
+                        <motion.span
+                          className="inline-block w-[2px] h-5 bg-vedic-saffron/40 ml-1 align-middle"
+                          animate={{ opacity: [1, 0] }}
+                          transition={{ duration: 0.8, repeat: Infinity }}
+                        />
+                      )}
                     </p>
-                  )}
-                </div>
-              ) : (
-                <div className="text-right">
-                  <div className="inline-block text-left bg-vedic-ash/30 rounded-lg px-4 sm:px-5 py-3 border border-vedic-parchment/5 max-w-[85%] sm:max-w-none">
-                    <p className="text-sm sm:text-base text-vedic-parchment/70 leading-relaxed">
+                    {!isRishiTyping && msg.content && (
+                      <p className="text-[10px] text-vedic-parchment/10 mt-4 font-sans">
+                        {formatTime(msg.timestamp)}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-right">
+                    <p className="inline-block text-left text-sm sm:text-base text-vedic-parchment/40 leading-relaxed font-sans">
                       {msg.content}
                     </p>
-                    <p className="text-xs text-vedic-parchment/20 mt-2">
+                    <p className="text-[10px] text-vedic-parchment/8 mt-2 font-sans">
                       {formatTime(msg.timestamp)}
                     </p>
                   </div>
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
 
-        {/* Rishi typing indicator — only when no streaming content yet */}
-        {isRishiTyping && (!messages.length || messages[messages.length - 1]?.role !== "rishi" || !messages[messages.length - 1]?.content) && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-3 pl-6"
-          >
-            <div className="flex gap-1.5">
+          {/* Typing indicator */}
+          {isRishiTyping && (!messages.length || messages[messages.length - 1]?.role !== "rishi" || !messages[messages.length - 1]?.content) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-8 flex items-center gap-2"
+            >
               {[0, 1, 2].map((i) => (
                 <motion.div
                   key={i}
-                  className="w-2 h-2 rounded-full bg-vedic-saffron/40"
-                  animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1, 0.8] }}
+                  className="w-1 h-1 rounded-full bg-vedic-saffron/30"
+                  animate={{ opacity: [0.2, 0.8, 0.2] }}
                   transition={{
-                    duration: 1.5,
+                    duration: 1.8,
                     repeat: Infinity,
-                    delay: i * 0.3,
+                    delay: i * 0.25,
                   }}
                 />
               ))}
-            </div>
-            <span className="text-xs text-vedic-gold/30 font-sacred italic">
-              The Rishi contemplates...
-            </span>
-          </motion.div>
-        )}
+            </motion.div>
+          )}
 
-        <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* Input area */}
-      <div className="flex-shrink-0 border-t border-vedic-gold/10 p-3 sm:p-4 pb-[env(safe-area-inset-bottom,12px)]">
-        <div className="flex items-end gap-2 sm:gap-3 max-w-4xl mx-auto">
-          {/* Voice input */}
-          <button
-            onClick={() => setIsRecording(!isRecording)}
-            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-              isRecording
-                ? "bg-vedic-agni/60 animate-pulse"
-                : "bg-vedic-ash/30 hover:bg-vedic-ash/50"
-            }`}
-            aria-label="Voice input"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-vedic-parchment/60"
-            >
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" y1="19" x2="12" y2="23" />
-            </svg>
-          </button>
-
-          {/* Text input */}
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-              }
-            }}
-            placeholder="Speak to the Rishi..."
-            className="flex-1 bg-vedic-ash/20 border border-vedic-gold/10 rounded-lg px-4 py-3 text-vedic-parchment/80 placeholder:text-vedic-parchment/15 resize-none outline-none focus:border-vedic-gold/30 transition-colors font-sans text-sm min-h-[44px] max-h-[120px]"
-            rows={1}
-          />
-
-          {/* Send */}
+      {/* Input — a glow at the bottom */}
+      <div className="flex-shrink-0 px-4 sm:px-8 py-3 pb-[max(env(safe-area-inset-bottom,12px),12px)]">
+        <div className="max-w-3xl mx-auto flex items-end gap-3">
+          <div className="flex-1 relative">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+              placeholder="Speak..."
+              className="w-full bg-white/[0.02] border border-white/[0.04] rounded-2xl px-5 py-3.5 text-vedic-parchment/70 placeholder:text-vedic-parchment/10 resize-none outline-none focus:border-white/[0.08] transition-colors duration-500 font-sans text-sm min-h-[48px] max-h-[120px]"
+              rows={1}
+            />
+          </div>
           <button
             onClick={sendMessage}
             disabled={!input.trim() || isRishiTyping}
-            className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-vedic-saffron/20 hover:bg-vedic-saffron/30 disabled:opacity-20 disabled:cursor-not-allowed transition-all border border-vedic-saffron/20"
+            className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center bg-vedic-saffron/10 hover:bg-vedic-saffron/15 disabled:opacity-10 disabled:cursor-not-allowed transition-all duration-500 border border-vedic-saffron/10"
             aria-label="Send"
           >
             <svg
@@ -391,11 +333,10 @@ export default function RishiChat() {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
-              className="text-vedic-saffron"
+              strokeWidth="1.5"
+              className="text-vedic-saffron/70"
             >
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </button>
         </div>

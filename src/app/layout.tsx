@@ -26,16 +26,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-[100dvh] bg-black text-vedic-parchment antialiased overflow-x-hidden">
+      <body className="min-h-[100dvh] bg-vedic-void text-vedic-parchment antialiased overflow-x-hidden">
         <AuthProvider>
           <div className="relative min-h-[100dvh]">
-            {/* Sacred geometry background overlay */}
-            <div className="fixed inset-0 yantra-bg pointer-events-none opacity-50 z-0" />
-
-            {/* User menu */}
             <UserMenu />
-
-            {/* Content */}
             <main className="relative z-10">{children}</main>
           </div>
         </AuthProvider>

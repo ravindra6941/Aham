@@ -18,7 +18,7 @@ export default function BackToMandala({ onBeforeNavigate }: BackToMandalaProps) 
   return (
     <motion.button
       onClick={handleClick}
-      className="fixed top-4 left-4 sm:top-6 sm:left-6 z-50 flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-vedic-gold/20 bg-black/60 backdrop-blur-sm text-vedic-gold/70 hover:text-vedic-gold hover:border-vedic-gold/40 transition-all group"
+      className="fixed top-5 left-5 sm:top-8 sm:left-8 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-vedic-void/80 backdrop-blur-md border border-white/[0.04] text-vedic-parchment/40 hover:text-vedic-parchment/70 transition-all duration-500 group"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
@@ -29,11 +29,11 @@ export default function BackToMandala({ onBeforeNavigate }: BackToMandalaProps) 
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
-        className="group-hover:-translate-x-0.5 transition-transform"
+        className="group-hover:-translate-x-0.5 transition-transform duration-300"
       >
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
-      <span className="font-sacred text-xs sm:text-sm">Mandala</span>
+      <span className="font-sans text-[11px] tracking-wider uppercase">Back</span>
     </motion.button>
   );
 }
